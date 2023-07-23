@@ -20,7 +20,8 @@ https://newsapi.org/docs/get-started
  */
 
 
-public class NewsApi {
+public class
+NewsApi {
 
     //API key is received through creating an account on the web site.
     private static final String baseUrl = "http://newsapi.org/v2/everything";
