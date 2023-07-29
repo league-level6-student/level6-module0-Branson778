@@ -25,7 +25,7 @@ int score = 0;
            String question = clue.getQuestion();
            String title = clue.getCategory().getTitle();
            String response = JOptionPane.showInputDialog(null, question, title, 0);
-           if(response == answer){
+           if(response.equalsIgnoreCase(answer)){
                score+=i;
            }
         }
