@@ -32,8 +32,9 @@ class MyDonutShopTest {
     @BeforeEach
     void setUp() {
     MockitoAnnotations.openMocks(this);
-
+    //bakeryService.makeDonuts();
     myDonutShop = new MyDonutShop(paymentService,deliveryService,bakeryService);
+        myDonutShop.openForTheDay();
     }
 
     @Test
@@ -45,28 +46,50 @@ Order order = new Order("CUSTOMER_NAME",
         5.00,
         "CREDIT_CARD_NUMBER",
         true);
-myDonutShop.takeOrder(order);
-//when(*Order Complete*).thenReturn(true);
+when(bakeryService.getDonutsRemaining()).thenReturn(50);
+when(paymentService.charge(order)).thenReturn(true);
+        myDonutShop.takeOrder(order);
         //when
-//verify(*Order Completer*, times(1)).*CompletionMethod*(order);
+verify(paymentService, times(1)).charge(order);
         //then
     }
 
     @Test
     void givenInsufficientDonutsRemaining_whenTakeOrder_thenThrowIllegalArgumentException() {
         //given
-
+        Order order = new Order("CUSTOMER_NAME",
+                "CUSTOMER_PHONE_NUMBER",
+                1,
+                5.00,
+                "CREDIT_CARD_NUMBER",
+                true);
         //when
-
-        //then
+        when(bakeryService.getDonutsRemaining()).thenReturn(0);
+        Throwable exceptionThrown = assertThrows(Exception.class, () -> myDonutShop.takeOrder(order));
+        assertEquals(exceptionThrown.getMessage(),"Insufficient donuts remaining");
+        try {
+            verify(myDonutShop, never()).takeOrder(any());
+        }catch(Exception e){}
+                //then
+        //assertThrows();
     }
 
     @Test
     void givenNotOpenForBusiness_whenTakeOrder_thenThrowIllegalStateException(){
         //given
-
+myDonutShop.closeForTheDay();
+        Order order = new Order("CUSTOMER_NAME",
+                "CUSTOMER_PHONE_NUMBER",
+                1,
+                5.00,
+                "CREDIT_CARD_NUMBER",
+                true);
         //when
-
+        Throwable exceptionThrown = assertThrows(Exception.class, () -> myDonutShop.takeOrder(order));
+        assertEquals(exceptionThrown.getMessage(),"Sorry we're currently closed");
+        try {
+            verify(myDonutShop, never()).takeOrder(any());
+        }catch(Exception e){}
         //then
     }
 
