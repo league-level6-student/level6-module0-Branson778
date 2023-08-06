@@ -14,6 +14,7 @@ import org.springframework.web.util.UriBuilder;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
@@ -42,6 +43,9 @@ class NewsApiTest {
     @Mock
     WebClient.ResponseSpec rsMock;
 
+    @Mock
+    ApiExampleWrapper apiEW;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -53,9 +57,8 @@ class NewsApiTest {
     void itShouldGetNewsStoryByTopic() {
         //given
         String topic = "Bread";
-
+        //Add articles to example wrapper
         ApiExampleWrapper aew = new ApiExampleWrapper();
-
 
         when(webMock.get()).thenReturn(rhusMock);
         when(rhusMock.uri((Function<UriBuilder, URI>) any())).thenReturn(rhsMock);
@@ -66,7 +69,7 @@ class NewsApiTest {
        ApiExampleWrapper actualResults = newsApi.getNewsStoryByTopic(topic);
         //then
         verify(webMock, times(1)).get();
-        assertEquals(aew, actualResults);
+        assertEquals(aew.getArticles().get(0), actualResults.getArticles().get(0));
 
     }
 
@@ -74,9 +77,33 @@ class NewsApiTest {
     void itShouldFindStory(){
         //given
         String topic = "Bread";
-        //when
+        String title = "The Easiest Way to Prevent a Soggy Sandwich";
+        String  content = "The only thing sadder than opening your lunchbox to find a soggy sandwich is opening your kids lunchbox at the end of the day to find a completely untouched one. Thankfully, you can prevent soggy, di… [+2289 chars]";
+        String url = "https://lifehacker.com/make-sandwiches-on-frozen-bread-to-stave-off-sogginess-1803757453";
 
+        List<Article> articles = new ArrayList<Article>();
+        Article article = new Article();
+        article.setTitle(title);
+        article.setContent(content);
+        article.setUrl(url);
+        articles.add(article);
+        apiEW.setArticles(articles);
+        //apiEW.setArticles(articles);
+        //when(newsApi.getArticles()).thenReturn(articles);
+        //when(newsApi.getNewsStoryByTopic(topic)).thenReturn();
+        when(webMock.get()).thenReturn(rhusMock);
+        when(rhusMock.uri((Function<UriBuilder, URI>) any())).thenReturn(rhsMock);
+        when(rhsMock.retrieve()).thenReturn(rsMock);
+        when(rsMock.bodyToMono(ApiExampleWrapper.class)).thenReturn(aewMono);
+        when(aewMono.block()).thenReturn(apiEW);
+
+        String expectedResult =
+                title + " -\n" + content + "\nFull article: " + url;
+        //when
+        String actualResult = newsApi.findStory(topic);
         //then
+        verify(webMock, times(1)).get();
+        assertEquals(expectedResult, actualResult);
     }
 
 
